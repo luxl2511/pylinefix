@@ -1,20 +1,22 @@
 -- Drop this file into your LazyVim plugins folder as
--- ~/.config/nvim/lua/plugins/pylinefix.lua and restart. Nothing else to edit.
+-- ~/.config/nvim/lua/plugins/pylinefix.lua and restart. Nothing to configure.
 --
--- It installs pylinefix, builds the binary, and appends it to your python
--- formatters so it runs on save after ruff/black/isort/whatever you already use.
+-- Loads on python files, builds the binary, and registers itself with conform
+-- so it runs on save after ruff/black/isort or whatever you already use.
 return {
-  "stevearc/conform.nvim",
-  dependencies = {
-    { "luxl2511/pylinefix", build = "cargo build --release" },
-  },
-  opts = function(_, opts)
-    opts.formatters = opts.formatters or {}
-    opts.formatters.pylinefix = require("pylinefix").formatter()
+  "luxl2511/pylinefix",
+  build = "cargo build --release",
+  ft = "python",
+  dependencies = { "stevearc/conform.nvim" },
+  config = function()
+    local conform = require("conform")
+    conform.formatters.pylinefix = require("pylinefix").formatter()
 
-    opts.formatters_by_ft = opts.formatters_by_ft or {}
-    local py = opts.formatters_by_ft.python or {}
-    table.insert(py, "pylinefix")
-    opts.formatters_by_ft.python = py
+    local py = conform.formatters_by_ft.python
+    if py == nil then
+      conform.formatters_by_ft.python = { "pylinefix" }
+    elseif type(py) == "table" and not vim.tbl_contains(py, "pylinefix") then
+      table.insert(py, "pylinefix")
+    end
   end,
 }
