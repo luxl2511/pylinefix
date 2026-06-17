@@ -1,0 +1,25 @@
+[package]
+name = "pylinefix"
+version = "0.1.0"
+edition = "2024"
+description = "Fix line-length issues Ruff leaves alone (long strings, docstrings, embedded SQL/JSON/markdown)."
+license = "MIT"
+repository = "https://github.com/luxl2511/pylinefix"
+readme = "README.md"
+
+[dependencies]
+anyhow = "1.0.102"
+clap = { version = "4.6.1", features = ["derive"] }
+ignore = "0.4.25"
+memchr = "2.8.0"
+once_cell = "1.21.4"
+regex = "1.12.3"
+serde = { version = "1.0.228", features = ["derive"] }
+textwrap = "0.16.2"
+toml = "1.1.2"
+tree-sitter = "0.26.8"
+tree-sitter-python = "0.25.0"
+
+[dev-dependencies]
+insta = "1.47.2"
+pretty_assertions = "1.4.1"
