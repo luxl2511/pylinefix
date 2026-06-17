@@ -38,6 +38,46 @@ Line length is read from `pyproject.toml` (falling back to 88), or set it with `
 | `--no-comments` | Disable comment reflowing. |
 | `-v`, `--verbose` | Print a summary to stderr. |
 
+## LazyVim / Neovim
+
+`pylinefix` ships a Lua plugin that registers it as a [conform.nvim](https://github.com/stevearc/conform.nvim) formatter, so it runs on save right after Ruff. conform is the default formatter engine in LazyVim.
+
+Add it as a dependency of your conform spec. The `build` step compiles the binary, so you don't need a separate `cargo install`:
+
+```lua
+{
+  "stevearc/conform.nvim",
+  dependencies = {
+    { "luxl2511/pylinefix", build = "cargo build --release" },
+  },
+  opts = {
+    formatters = {
+      pylinefix = function()
+        return require("pylinefix").formatter()
+      end,
+    },
+    formatters_by_ft = {
+      python = { "ruff_fix", "ruff_format", "pylinefix" },
+    },
+  },
+}
+```
+
+Or let the plugin wire itself into conform:
+
+```lua
+{
+  "luxl2511/pylinefix",
+  build = "cargo build --release",
+  dependencies = { "stevearc/conform.nvim" },
+  config = function()
+    require("pylinefix").setup()
+  end,
+}
+```
+
+`setup()` appends pylinefix to the `python` filetype by default. Override with `setup({ filetypes = { "python" } })`. If `pylinefix` is already on your `PATH` it's used directly; otherwise the plugin falls back to the binary built in its own directory.
+
 ## Run after Ruff
 
 `pylinefix` is meant to run as a second pass after Ruff:
