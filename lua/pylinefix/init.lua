@@ -22,17 +22,4 @@ function M.formatter()
   }
 end
 
--- Register pylinefix with conform.nvim and append it to the given filetypes so
--- it runs after whatever formatter already handles them (ruff for python).
-function M.setup(opts)
-  opts = vim.tbl_deep_extend("force", { filetypes = { "python" } }, opts or {})
-  local conform = require("conform")
-  conform.formatters.pylinefix = vim.tbl_deep_extend("force", M.formatter(), opts.formatter or {})
-  for _, ft in ipairs(opts.filetypes) do
-    local list = conform.formatters_by_ft[ft] or {}
-    table.insert(list, "pylinefix")
-    conform.formatters_by_ft[ft] = list
-  end
-end
-
 return M

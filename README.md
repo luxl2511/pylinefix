@@ -40,43 +40,35 @@ Line length is read from `pyproject.toml` (falling back to 88), or set it with `
 
 ## LazyVim / Neovim
 
-`pylinefix` ships a Lua plugin that registers it as a [conform.nvim](https://github.com/stevearc/conform.nvim) formatter, so it runs on save right after Ruff. conform is the default formatter engine in LazyVim.
+Copy [`pylinefix.lua`](pylinefix.lua) into your LazyVim plugins folder and restart:
 
-Add it as a dependency of your conform spec. The `build` step compiles the binary, so you don't need a separate `cargo install`:
+```
+~/.config/nvim/lua/plugins/pylinefix.lua
+```
+
+That's the whole install. The spec pulls in pylinefix, builds the binary with `cargo build --release`, and appends it to your python formatters. It runs on save after whatever you already use (ruff, black, isort, ...), it does not replace them. No conform config to edit by hand.
+
+The file itself:
 
 ```lua
-{
+return {
   "stevearc/conform.nvim",
   dependencies = {
     { "luxl2511/pylinefix", build = "cargo build --release" },
   },
-  opts = {
-    formatters = {
-      pylinefix = function()
-        return require("pylinefix").formatter()
-      end,
-    },
-    formatters_by_ft = {
-      python = { "ruff_fix", "ruff_format", "pylinefix" },
-    },
-  },
-}
-```
+  opts = function(_, opts)
+    opts.formatters = opts.formatters or {}
+    opts.formatters.pylinefix = require("pylinefix").formatter()
 
-Or let the plugin wire itself into conform:
-
-```lua
-{
-  "luxl2511/pylinefix",
-  build = "cargo build --release",
-  dependencies = { "stevearc/conform.nvim" },
-  config = function()
-    require("pylinefix").setup()
+    opts.formatters_by_ft = opts.formatters_by_ft or {}
+    local py = opts.formatters_by_ft.python or {}
+    table.insert(py, "pylinefix")
+    opts.formatters_by_ft.python = py
   end,
 }
 ```
 
-`setup()` appends pylinefix to the `python` filetype by default. Override with `setup({ filetypes = { "python" } })`. If `pylinefix` is already on your `PATH` it's used directly; otherwise the plugin falls back to the binary built in its own directory.
+pylinefix formats over stdin, so it works through [conform.nvim](https://github.com/stevearc/conform.nvim), the default formatter engine in LazyVim. If `pylinefix` is on your `PATH` it's used directly; otherwise the plugin uses the binary it built in its own directory, so a Rust toolchain at install time is the only requirement.
 
 ## Run after Ruff
 
