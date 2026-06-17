@@ -1,6 +1,6 @@
 [package]
 name = "pylinefix"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2024"
 description = "Fix line-length issues Ruff leaves alone (long strings, docstrings, embedded SQL/JSON/markdown)."
 license = "MIT"
