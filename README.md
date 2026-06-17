@@ -46,24 +46,26 @@ Copy [`pylinefix.lua`](pylinefix.lua) into your LazyVim plugins folder and resta
 ~/.config/nvim/lua/plugins/pylinefix.lua
 ```
 
-That's the whole install. The spec pulls in pylinefix, builds the binary with `cargo build --release`, and appends it to your python formatters. It runs on save after whatever you already use (ruff, black, isort, ...), it does not replace them. No conform config to edit by hand.
+That's the whole install. Like any other LazyVim plugin: drop it in, restart, nothing to configure. It loads on python files, builds the binary with `cargo build --release`, and registers itself so it runs on save after whatever you already use (ruff, black, isort, ...). It appends, it does not replace them.
 
 The file itself:
 
 ```lua
 return {
-  "stevearc/conform.nvim",
-  dependencies = {
-    { "luxl2511/pylinefix", build = "cargo build --release" },
-  },
-  opts = function(_, opts)
-    opts.formatters = opts.formatters or {}
-    opts.formatters.pylinefix = require("pylinefix").formatter()
+  "luxl2511/pylinefix",
+  build = "cargo build --release",
+  ft = "python",
+  dependencies = { "stevearc/conform.nvim" },
+  config = function()
+    local conform = require("conform")
+    conform.formatters.pylinefix = require("pylinefix").formatter()
 
-    opts.formatters_by_ft = opts.formatters_by_ft or {}
-    local py = opts.formatters_by_ft.python or {}
-    table.insert(py, "pylinefix")
-    opts.formatters_by_ft.python = py
+    local py = conform.formatters_by_ft.python
+    if py == nil then
+      conform.formatters_by_ft.python = { "pylinefix" }
+    elseif type(py) == "table" and not vim.tbl_contains(py, "pylinefix") then
+      table.insert(py, "pylinefix")
+    end
   end,
 }
 ```
